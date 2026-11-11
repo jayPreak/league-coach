@@ -1,6 +1,6 @@
 ---
 name: league-coach
-description: League of Legends coaching grounded in live OP.GG data. Use whenever the user asks about a League matchup ("I'm Ahri into Zed, how do I play it?"), what to build, runes, skill order, counter picks, what to pick or ban, team comp or synergy, the current meta or tier list, or wants their own account or recent games reviewed. Requires the OP.GG MCP server (https://mcp-api.op.gg/mcp).
+description: League of Legends coaching grounded in live OP.GG data. Use whenever the user asks about a League matchup ("I'm Ahri into Zed, how do I play it?"), what to build, runes, skill order, counter picks, what to pick or ban, team comp or synergy, the current meta or tier list, wants their own account or recent games reviewed, or asks for an off-meta, streamer or named build ("Baus's nuclear fission Volibear"), which it researches on the web and verifies against the creator's real games. Requires the OP.GG MCP server (https://mcp-api.op.gg/mcp).
 ---
 
 # League Coach
@@ -49,6 +49,7 @@ Ask a question only when you cannot proceed, for example no champion named at al
 | What's strong right now, what to pick or ban | `lol_list_lane_meta_champions` |
 | Who pairs well with X (duo, jungle) | `lol_get_champion_synergies` |
 | What an item does or costs | `lol_list_items` |
+| A streamer's, pro's or named off-meta build | Web search, then the steps under "Off-meta, streamer and named builds" |
 | Review my account / recent games | `lol_get_summoner_profile`, `lol_list_summoner_matches`, then `lol_get_summoner_game_detail` for one game |
 | ARAM augments | `lol_list_aram_augments` |
 
@@ -69,6 +70,19 @@ Make independent calls in parallel.
   `skills[]`: sorted by popularity. Each has `play` and `win`.
 - `single_items[]` by `depth`: what people buy as item 1, 2, 3, 4, 5.
 - `game_lengths[]`: whether the champion wins early or scales.
+
+**The payload is large (around 50,000 characters) and may not come back
+inline.** Some clients save it to a file and return only the path. When that
+happens, do not read the file end to end. If you have a shell, pull just the
+fields above with `jq`, taking the top three to eight entries of each list and
+computing `win / play` as you go. If you have no shell, skip the file and get
+the same information from `lol_get_champion_analysis` on the user's champion
+with the build fields plus `data.weak_counters[]` and `data.strong_counters[]`,
+which lets you choose how much comes back.
+
+OP.GG has no jungle pathing, warding or macro data. When asked for those,
+reason from the abilities and the matchup read, and say that this part is
+reasoning rather than statistics.
 
 ### Asking champion analysis for the right fields
 
@@ -91,6 +105,48 @@ advice usable: which ability to dodge, when its cooldown gives you a window,
 what level the power spike lands. Request `spells[]`, `passive`, `enemy_tips[]`
 and `ally_tips[]` for both champions. Use the cooldown numbers it returns
 rather than ones you remember.
+
+## Off-meta, streamer and named builds
+
+Some requests are not for the statistically best build but for a specific one:
+"Baus's nuclear fission Volibear", "that AP Malphite build", "the new
+lethality Yi tech", a pro's or one-trick's setup. These builds are named by
+their creators, change often, and are usually newer than your training. Do not
+guess what a named build contains, and do not substitute the standard OP.GG
+build for it. Research it, then check it.
+
+1. **Search the web** for the build by its name and creator. Good sources, in
+   rough order of reliability: the creator's own video or stream title and
+   description, their pinned guide or Discord summary, recent Reddit threads
+   on the champion's subreddit, and build-site pages for that player. Prefer
+   sources from the last few weeks and note the patch or date they refer to.
+   If you have no web search tool, say so and ask the user to paste the build
+   or a link.
+2. **Check what the creator actually plays.** Find their Riot ID and region
+   (from the search, or `lol_get_pro_player_riot_id` for pros), then call
+   `lol_list_summoner_matches` and read their recent games on that champion:
+   items in purchase slots, keystone, summoner spells, position. Use
+   `lol_get_summoner_game_detail` on one or two games for the full picture.
+   Streamers run several accounts, so if the first shows no recent games on
+   the champion, look for another. This step is what separates the real build
+   from a clickbait title or an outdated guide.
+3. **Confirm the pieces still exist.** Call `lol_list_items` when an item name
+   from a source looks unfamiliar or the source is more than a patch or two
+   old. Items get removed and renamed. If a piece is gone, say so and name
+   the closest current replacement the creator's recent games show.
+4. **Put it next to the standard build.** Call `lol_get_champion_analysis` for
+   the same champion and position and say, with numbers where OP.GG has enough
+   games, how the off-meta build compares, and what it gives up to get what
+   it gets.
+
+Then answer: what the build is (runes, items in order, skill order), the idea
+behind it in a sentence or two, how the creator plays it (lane behaviour, when
+it spikes, what it does in fights), and when it works or doesn't. Say plainly
+which parts you confirmed from the creator's games, which come from a guide or
+video, and which you could not verify. Link the sources you used.
+
+Off-meta builds often depend on a playstyle most players do not copy well. Say
+so when that applies; it is useful, not discouraging.
 
 ## Judging the numbers
 

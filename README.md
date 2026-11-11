@@ -6,6 +6,8 @@ advice from live OP.GG data. Ask things like:
 - "I'm playing Ahri into Zed mid, how should I play it?"
 - "What do I build on Jinx against three tanks?"
 - "What should I ban in top lane right now?"
+- "Give me Baus's nuclear fission Volibear build, runes and playstyle."
+  (needs web search turned on)
 - "Look at my last 10 games, Name#TAG on EUW, and tell me what to fix."
 
 ## Setup (two steps)
