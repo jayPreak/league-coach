@@ -24,8 +24,7 @@ The skill reads its data from OP.GG's public MCP server. No API key needed.
 
 ### 2. Install the skill
 
-- **Claude Code and other coding agents:** one command
-:
+- **Claude Code and other coding agents:** one command:
 
   ```bash
   npx skills add jayPreak/league-coach --skill league-coach -g
